@@ -22,6 +22,7 @@ let $ = null
 // - a string "@<sectionId>" to indicate the specified section
 // - a string "@" to indicate the default section
 var GlobalConfig = {
+  keyboard: false,
   selector: '', // can be a valid <extSelector> except "@" syntax.
   straightOnly: false,
   straightOverlapThreshold: 0.5,
@@ -950,14 +951,33 @@ function onBlur (evt) {
   }
 }
 
+function setGlobalConfig (config) {
+  for (var key in config) {
+    let keys = [
+      GlobalConfig[key],
+      config[key]
+    ]
+
+    if (!keys.includes(undefined)) {
+      console.log(key)
+      GlobalConfig[key] = config[key]
+    }
+  }
+}
+
 /** *****************/
 /* Public Function */
 /** *****************/
-var SpatialNavigation = {
-  init: function () {
+let SpatialNavigation = {
+  init: function (config = {}) {
+    setGlobalConfig(config)
+
     if (!_ready) {
-      window.addEventListener('keydown', onKeyDown)
-      window.addEventListener('keyup', onKeyUp)
+      if (GlobalConfig.keyboard) {
+        window.addEventListener('keydown', onKeyDown)
+        window.addEventListener('keyup', onKeyUp)
+      }
+
       window.addEventListener('focus', onFocus, true)
       window.addEventListener('blur', onBlur, true)
       _ready = true
@@ -967,8 +987,12 @@ var SpatialNavigation = {
   uninit: function () {
     window.removeEventListener('blur', onBlur, true)
     window.removeEventListener('focus', onFocus, true)
-    window.removeEventListener('keyup', onKeyUp)
-    window.removeEventListener('keydown', onKeyDown)
+
+    if (GlobalConfig.keyboard) {
+      window.removeEventListener('keyup', onKeyUp)
+      window.removeEventListener('keydown', onKeyDown)
+    }
+
     SpatialNavigation.clear()
     _idPool = 0
     _ready = false
@@ -1202,48 +1226,48 @@ var SpatialNavigation = {
 
 window.SpatialNavigation = SpatialNavigation
 
-/** ******************/
-/* jQuery Interface */
-/** ******************/
-if ($) {
-  $.SpatialNavigation = function () {
-    SpatialNavigation.init()
-
-    if (arguments.length > 0) {
-      if ($.isPlainObject(arguments[0])) {
-        return SpatialNavigation.add(arguments[0])
-      } else if ($.type(arguments[0]) === 'string' &&
-        $.isFunction(SpatialNavigation[arguments[0]])) {
-        return SpatialNavigation[arguments[0]]
-          .apply(SpatialNavigation, [].slice.call(arguments, 1))
-      }
-    }
-
-    return $.extend({}, SpatialNavigation)
-  }
-
-  $.fn.SpatialNavigation = function () {
-    var config
-
-    if ($.isPlainObject(arguments[0])) {
-      config = arguments[0]
-    } else {
-      config = {
-        id: arguments[0]
-      }
-    }
-
-    config.selector = this
-
-    SpatialNavigation.init()
-    if (config.id) {
-      SpatialNavigation.remove(config.id)
-    }
-    SpatialNavigation.add(config)
-    SpatialNavigation.makeFocusable(config.id)
-
-    return this
-  }
-}
+// /** ******************/
+// /* jQuery Interface */
+// /** ******************/
+// if ($) {
+//   $.SpatialNavigation = function () {
+//     SpatialNavigation.init()
+//
+//     if (arguments.length > 0) {
+//       if ($.isPlainObject(arguments[0])) {
+//         return SpatialNavigation.add(arguments[0])
+//       } else if ($.type(arguments[0]) === 'string' &&
+//         $.isFunction(SpatialNavigation[arguments[0]])) {
+//         return SpatialNavigation[arguments[0]]
+//           .apply(SpatialNavigation, [].slice.call(arguments, 1))
+//       }
+//     }
+//
+//     return $.extend({}, SpatialNavigation)
+//   }
+//
+//   $.fn.SpatialNavigation = function () {
+//     var config
+//
+//     if ($.isPlainObject(arguments[0])) {
+//       config = arguments[0]
+//     } else {
+//       config = {
+//         id: arguments[0]
+//       }
+//     }
+//
+//     config.selector = this
+//
+//     SpatialNavigation.init()
+//     if (config.id) {
+//       SpatialNavigation.remove(config.id)
+//     }
+//     SpatialNavigation.add(config)
+//     SpatialNavigation.makeFocusable(config.id)
+//
+//     return this
+//   }
+// }
 
 export default SpatialNavigation

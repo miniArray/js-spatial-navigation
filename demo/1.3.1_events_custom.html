@@ -9,8 +9,23 @@
 
     <script src="../dist/index.browserify.js"></script>
     <script>
-      window.addEventListener('load', function() {
-        SpatialNavigation.init();
+      window.addEventListener('load', function () {
+        SpatialNavigation.init({ keyboard: false });
+
+        function move (e) {
+          if (e.type === 'keydown') {
+            let directions = {
+              37: "left",
+              38: "up",
+              39: "right",
+              40: "down",
+            }
+
+            SpatialNavigation.move(directions[e.keyCode])
+          }
+        }
+
+        window.addEventListener('keydown', move)
 
         SpatialNavigation.add({
           selector: '.focusable'
@@ -26,15 +41,15 @@
           'sn:enter-down',
           'sn:enter-up',
           'sn:navigatefailed'
-        ];
+        ]
 
-        var eventHandler = function(evt) {
-          console.log(evt.type, evt.target, evt.detail);
-        };
+        var eventHandler = function (evt) {
+          // console.log(evt.type, evt.target, evt.detail)
+        }
 
-        validEvents.forEach(function(type) {
-          window.addEventListener(type, eventHandler);
-        });
+        validEvents.map(type => {
+          window.addEventListener(type, eventHandler)
+        })
 
         SpatialNavigation.makeFocusable();
         SpatialNavigation.focus();
